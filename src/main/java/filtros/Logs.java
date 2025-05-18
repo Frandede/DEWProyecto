@@ -43,4 +43,4 @@ public class Logs implements Filter {
 
     @Override
     public void destroy() {}
-}
+} //PRUEBA 
