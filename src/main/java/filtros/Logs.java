@@ -32,15 +32,15 @@ public class Logs implements Filter {
         String metodo = request.getMethod();
         LocalDateTime fecha = LocalDateTime.now();
 
-        String log = fecha + " " + usuario + " " + ip + " " + uri + " " + metodo + "\n";
+        String log = fecha + " " + usuario + " " + ip + " " + uri + " " + metodo + "\n";  
 
         synchronized (this) {
-            Files.write(Paths.get(logPath), log.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            Files.write(Paths.get(logPath), log.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);  
         }
 
         chain.doFilter(req, res);
     }
 
     @Override
-    public void destroy() {}
+    public void destroy() {}  
 }
