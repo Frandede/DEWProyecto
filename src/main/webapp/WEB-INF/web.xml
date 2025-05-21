@@ -16,5 +16,45 @@
         <filter-name>Logs</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
+    
+    
+    
+    <login-config>
+    <auth-method>BASIC</auth-method>
+    <form-login-config>
+        <form-login-page>/login.html</form-login-page>
+        <form-error-page>/error.html</form-error-page>
+    </form-login-config>
+   </login-config>
+
+  <security-constraint>
+    <web-resource-collection>
+        <web-resource-name>Área alumno</web-resource-name>
+        <url-pattern>/alumno/*</url-pattern>
+    </web-resource-collection>
+    <auth-constraint>
+        <role-name>rolalu</role-name>
+    </auth-constraint>
+  </security-constraint>
+  
+  
+   <security-constraint>
+    <web-resource-collection>
+        <web-resource-name>Área profesores</web-resource-name>
+        <url-pattern>/profesores/*</url-pattern>
+    </web-resource-collection>
+    <auth-constraint>
+        <role-name>rolpro</role-name>
+    </auth-constraint>
+  </security-constraint>
+    
+    
+ <!--  Declarar roles en la aplicación -->
+  <security-role>
+    <role-name>rolalu</role-name>
+  </security-role>
+  <security-role>
+    <role-name>rolpro</role-name>
+  </security-role>
 
 </web-app>
