@@ -52,6 +52,6 @@
     <user password="dew2425" roles="manager-script,admin" username="dew"/>
 	<role rolename="rolalu"/>
     <role rolename="rolpro"/>
-    <user username="alumno" password="1234" roles="rolalu"/>
-    <user username="profe" password="abcd" roles="rolpro"/>
+    <user username="alumnoJose" password="1234" roles="rolalu"/>
+    <user username="profeMiguel" password="abcd" roles="rolpro"/>
 </tomcat-users>

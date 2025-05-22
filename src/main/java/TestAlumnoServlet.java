@@ -20,4 +20,4 @@ public class TestAlumnoServlet extends HttpServlet {
         PrintWriter out = response.getWriter();
         out.println("Usuario autenticado: " + request.getRemoteUser());
     }
-}
+}// PRUEBA TEST 
