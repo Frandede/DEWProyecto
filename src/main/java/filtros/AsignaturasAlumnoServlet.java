@@ -55,8 +55,10 @@ public class AsignaturasAlumnoServlet extends HttpServlet {
                 out.println("</form>");
             }
 
-            out.println("<a href='test' class='btn btn-secondary mt-3'>Volver</a>");
-            out.println("</body></html>");
+            
+            // Botón para cerrar sesión (logout)
+            out.println("<a href='" + req.getContextPath() + "/logout' class='btn btn-danger me-2'>Cerrar sesión</a>");
+
         }
     }
 }
