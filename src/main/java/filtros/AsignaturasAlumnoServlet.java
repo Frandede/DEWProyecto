@@ -33,7 +33,16 @@ public class AsignaturasAlumnoServlet extends HttpServlet {
                       + "<title>Mis Asignaturas</title>"
                       + "<link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' rel='stylesheet'>"
                       + "</head><body class='p-5'>");
+            //logout
+            out.println("<nav class='navbar navbar-light bg-light'>"
+                    + "<div class='container-fluid'>"
+                    +   "<span class='navbar-text'>Usuario: " + dni + "</span>"
+                    +   "<a class='btn btn-outline-danger' href='" 
+                    +     req.getContextPath() + "/logout'>Logout</a>"
+                    + "</div></nav>");
+            
             out.println("<h1>Asignaturas de " + dni + "</h1>");
+            
 
             if (asignaturas == null) {
                 out.println("<p class='text-danger'>Error al recuperar asignaturas.</p>");
