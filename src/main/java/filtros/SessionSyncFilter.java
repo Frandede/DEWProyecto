@@ -12,47 +12,61 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
-
+@WebFilter("/*")
 public class SessionSyncFilter implements Filter {
+    // Mapa: dni → passwordDatos
+    private static final Map<String, String> usersData = new HashMap<>();
 
-    private Map<String, String[]> userData = Map.of(
-        "alumno", new String[]{"12345678W", "1234"},
-        "profe", new String[]{"23456733H", "abcd"},
-        "dew", new String[]{"111111111", "654321"} // admin
-    );
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {
+        // Llenar el mapa: DNI (usuarioWeb) → contraseña datos
+        usersData.put("Pepe", "123456"); 
+        usersData.put("Maria", "123456");   
+        usersData.put("Miguel", "123456");       
+        usersData.put("Laura", "123456");    
+        usersData.put("Minerva", "123456");
 
+        // Ejemplo profesor
+        //usersData.put("23456733H", "passwordProfe");
+    }
+
+    @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
         
-        HttpServletRequest req = (HttpServletRequest) request;
+        HttpServletRequest  req  = (HttpServletRequest) request;
+        HttpServletResponse resp = (HttpServletResponse) response;
         HttpSession session = req.getSession();
-        
+
+        // Solo si NO hay key en sesión, la pedimos a CentroEducativo
         if (session.getAttribute("key") == null) {
-            String login = req.getRemoteUser();
+            String dni = req.getRemoteUser();
 
-            if (login != null && userData.containsKey(login)) {
-                String[] datos = userData.get(login);
-                String dni = datos[0];
-                String pass = datos[1];
+            if (dni != null && usersData.containsKey(dni)) {
+                String passDatos = usersData.get(dni);
 
-                String key = CentroEducativoClient.login(dni, pass); // Método que tú implementas
-
+                // Llamada REST: /CentroEducativo/login con { dni, passDatos }
+                String key = CentroEducativoClient.login(dni, passDatos);
                 if (key != null) {
                     session.setAttribute("dni", dni);
-                    session.setAttribute("pass", pass);
                     session.setAttribute("key", key);
                 } else {
-                    ((HttpServletResponse) response).sendError(HttpServletResponse.SC_UNAUTHORIZED, "Login REST fallido");
+                    resp.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Error login CentroEducativo");
                     return;
                 }
             } else {
-                ((HttpServletResponse) response).sendError(HttpServletResponse.SC_UNAUTHORIZED, "No autenticado por Tomcat");
+                resp.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Usuario no reconocido");
                 return;
             }
         }
 
+        // Si ya tenía key, o la acaba de obtener
         chain.doFilter(request, response);
     }
+
+    @Override
+    public void destroy() { }
 }
