@@ -17,56 +17,80 @@ import java.util.Map;
 
 @WebFilter("/*")
 public class SessionSyncFilter implements Filter {
-    // Mapa: dni → passwordDatos
-    private static final Map<String, String> usersData = new HashMap<>();
+    // Mapa: nombreWeb -> { dniCentroEducativo, passCentroEducativo }
+    private static final Map<String, String[]> usersData = new HashMap<>();
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
-        // Llenar el mapa: DNI (usuarioWeb) → contraseña datos
-        usersData.put("Pepe", "123456"); 
-        usersData.put("Maria", "123456");   
-        usersData.put("Miguel", "123456");       
-        usersData.put("Laura", "123456");    
-        usersData.put("Minerva", "123456");
-
-        // Ejemplo profesor
-        //usersData.put("23456733H", "passwordProfe");
+        // Mapea cada “username web” al (dni, password) que usa CentroEducativo
+        usersData.put("pepe",    new String[]{"12345678W", "123456"});
+        usersData.put("maria",   new String[]{"23456387R", "123456"});
+        usersData.put("miguel",  new String[]{"34567891F", "123456"});
+        usersData.put("laura",   new String[]{"93847525G", "123456"});
+        usersData.put("minerva", new String[]{"37264096W", "123456"});
+        // Ejemplo profesor:
+        usersData.put("ramon",   new String[]{"23456733H", "passwordRamon"});
     }
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
-        
-        HttpServletRequest  req  = (HttpServletRequest) request;
+
+        HttpServletRequest  req  = (HttpServletRequest)  request;
         HttpServletResponse resp = (HttpServletResponse) response;
+        String uri = req.getRequestURI();
+        String context = req.getContextPath();
+
+        // 0) Permitir acceso libre a página de login y recursos públicos
+        if (uri.equals(context + "/") ||
+            uri.equals(context + "/index.html") ||
+            uri.startsWith(context + "/static/") ||
+            uri.startsWith(context + "/css/") ||
+            uri.startsWith(context + "/js/") ||
+            uri.startsWith(context + "/images/")) {
+            chain.doFilter(request, response);
+            return;
+        }
+
         HttpSession session = req.getSession();
 
-        // Solo si NO hay key en sesión, la pedimos a CentroEducativo
+        // 1) Si la sesión no contiene la “key” de CentroEducativo, la solicitamos
         if (session.getAttribute("key") == null) {
-            String dni = req.getRemoteUser();
+            // 2) Obtiene el “username web” que validó Tomcat
+            String nombreWeb = req.getRemoteUser(); // ej. “pepe”, “maria”, “ramon”
 
-            if (dni != null && usersData.containsKey(dni)) {
-                String passDatos = usersData.get(dni);
+            if (nombreWeb != null && usersData.containsKey(nombreWeb)) {
+                // 3) Extraer DNI y contraseña datos del mapa
+                String[] datos = usersData.get(nombreWeb);
+                String dniDato  = datos[0];
+                String passDato = datos[1];
 
-                // Llamada REST: /CentroEducativo/login con { dni, passDatos }
-                String key = CentroEducativoClient.login(dni, passDatos);
+                // 4) Llamar a CentroEducativo/login para obtener “key”
+                String key = CentroEducativoClient.login(dniDato, passDato);
                 if (key != null) {
-                    session.setAttribute("dni", dni);
+                    // 5) Guardar dni y key en session
+                    session.setAttribute("dni", dniDato);
                     session.setAttribute("key", key);
                 } else {
-                    resp.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Error login CentroEducativo");
+                    // Si el REST de CentroEducativo rechaza las credenciales
+                    resp.sendError(HttpServletResponse.SC_UNAUTHORIZED,
+                                   "Error de login en CentroEducativo");
                     return;
                 }
             } else {
-                resp.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Usuario no reconocido");
+                // Usuario web no mapeado al REST
+                resp.sendError(HttpServletResponse.SC_UNAUTHORIZED,
+                               "Usuario no reconocido en filtro");
                 return;
             }
         }
 
-        // Si ya tenía key, o la acaba de obtener
+        // Si ya había “key” en sesión, o la acabamos de obtener, continúa
         chain.doFilter(request, response);
     }
 
     @Override
-    public void destroy() { }
+    public void destroy() {
+        // Limpieza si es necesaria
+    }
 }
