@@ -25,7 +25,7 @@ public class AsignaturasAlumnoServlet extends HttpServlet {
         String dni = (String) session.getAttribute("dni");
         String key = (String) session.getAttribute("key");
 
-        List<Asignatura> asignaturas = CentroEducativoClient.getAsignaturas(dni, key);
+        List<Asignatura> asignaturas = CentroEducativoClient.getAsignaturasDeAlumno(dni, key);
 
         resp.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = resp.getWriter()) {
@@ -41,10 +41,11 @@ public class AsignaturasAlumnoServlet extends HttpServlet {
                 out.println("<p>No tienes asignaturas inscritas.</p>");
             } else {
                 out.println("<table class='table table-striped'>"
-                          + "<thead><tr><th>Código</th><th>Nombre</th><th>Cuatrimestre</th></tr></thead><tbody>");
+                          + "<thead><tr><th>Asignatura</th><th>Nota</th></tr></thead><tbody>");
                 for (Asignatura a : asignaturas) {
-                    out.printf("<tr><td>%s</td><td>%s</td><td>%s</td></tr>%n",
-                               a.getCodigo(), a.getNombre(), a.getCuatrimestre());
+                    out.printf("<tr><td>%s</td><td>%s</td></tr>%n",
+                               a.getAsignaturasDeAlumno(),
+                               (a.getNota() == null || a.getNota().isEmpty()) ? "—" : a.getNota());
                 }
                 out.println("</tbody></table>");
             }
