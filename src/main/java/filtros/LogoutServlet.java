@@ -17,11 +17,14 @@ public class LogoutServlet extends HttpServlet {
         if (session != null) {
             session.invalidate();
         }
+        
+        Cookie deleteSession = new Cookie("JSESSIONID", "");
+        deleteSession.setMaxAge(0);
+        deleteSession.setPath("/DEWProyecto"); // ← Path exacto
+        resp.addCookie(deleteSession);
 
-        // 2) Forzamos 401 Basic para que el navegador olvide las credenciales
-        resp.setHeader("WWW-Authenticate", "Basic realm=\"NOL 2425\"");
-        resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
+      
         // 3) Enviamos HTML minimalista con fondo blanco y ocultando elementos previos
         String context = req.getContextPath() + "/";
         resp.setContentType("text/html;charset=UTF-8");

@@ -64,8 +64,7 @@ public class AsignaturasAlumnoServlet extends HttpServlet {
             out.println("<a href='" + req.getContextPath() + "/logout' class='btn btn-danger me-2'>Cerrar sesión</a>");
 
             // Botón para volver
-            out.println("<a href='test' class='btn btn-secondary'>Volver</a>");
-
+           
             out.println("</body></html>");
         }
     }
