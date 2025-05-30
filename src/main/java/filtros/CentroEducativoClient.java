@@ -153,14 +153,12 @@ public class CentroEducativoClient {
     }
     
     
-    public static List<Asignatura> getAsignaturasDeProfesor(String dni, String key) {
+    public static List<AsignaturaProfesor> getAsignaturasDeProfesor(String dni, String key) {
         HttpURLConnection con = null;
         try {
             String urlStr = String.format("http://localhost:9090/CentroEducativo/profesores/%s/asignaturas?key=%s",
                                           URLEncoder.encode(dni, StandardCharsets.UTF_8),
                                           URLEncoder.encode(key, StandardCharsets.UTF_8));
-            System.out.println("GET Asignaturas Profesor URL: " + urlStr);
-
             URL url = new URL(urlStr);
             con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
@@ -168,23 +166,10 @@ public class CentroEducativoClient {
 
             if (sessionCookie != null) {
                 con.setRequestProperty("Cookie", sessionCookie);
-                System.out.println("Enviando cookie: " + sessionCookie);
             }
 
             int status = con.getResponseCode();
-            if (status != HttpURLConnection.HTTP_OK) {
-                try (BufferedReader err = new BufferedReader(
-                        new InputStreamReader(con.getErrorStream(), StandardCharsets.UTF_8))) {
-                    StringBuilder sbErr = new StringBuilder();
-                    String line;
-                    while ((line = err.readLine()) != null) {
-                        sbErr.append(line).append('\n');
-                    }
-                    System.err.println("Error body: " + sbErr);
-                }
-                System.err.println("HTTP " + status + " al pedir asignaturas del profesor");
-                return null;
-            }
+            if (status != HttpURLConnection.HTTP_OK) return null;
 
             StringBuilder sb = new StringBuilder();
             try (BufferedReader br = new BufferedReader(
@@ -196,7 +181,7 @@ public class CentroEducativoClient {
             }
 
             JsonArray array = gson.fromJson(sb.toString(), JsonArray.class);
-            return gson.fromJson(array, new TypeToken<List<Asignatura>>() {}.getType());
+            return gson.fromJson(array, new TypeToken<List<AsignaturaProfesor>>() {}.getType());
 
         } catch (Exception e) {
             e.printStackTrace();

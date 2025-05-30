@@ -26,7 +26,8 @@ public class AsignaturasProfesorServlet extends HttpServlet {
         String dni = (String) session.getAttribute("dni");
         String key = (String) session.getAttribute("key");
 
-        List<Asignatura> asignaturas = CentroEducativoClient.getAsignaturasDeProfesor(dni, key);
+        List<AsignaturaProfesor> asignaturas = CentroEducativoClient.getAsignaturasDeProfesor(dni, key); 
+
 
         resp.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = resp.getWriter()) {
@@ -41,9 +42,9 @@ public class AsignaturasProfesorServlet extends HttpServlet {
                 out.println("<p class='text-danger'>No se encontraron asignaturas.</p>");
             } else {
                 out.println("<ul class='list-group'>");
-                for (Asignatura a : asignaturas) {
-                    String acronimo = a.getAsignaturasDeProfesor();
-                    out.printf("<li class='list-group-item'>%s</li>%n", acronimo);
+                for (AsignaturaProfesor a : asignaturas) {
+                    out.printf("<li class='list-group-item'>%s - %s (%sº curso, %s) [%s créditos]</li>",
+                               a.getAcronimo(), a.getNombre(), a.getCurso(), a.getCuatrimestre(), a.getCreditos());
                 }
                 out.println("</ul>");
             }
