@@ -29,7 +29,7 @@ public class SessionSyncFilter implements Filter {
         usersData.put("laura",   new String[]{"93847525G", "123456"});
         usersData.put("minerva", new String[]{"37264096W", "123456"});
         // Ejemplo profesor:
-        usersData.put("ramon",   new String[]{"23456733H", "passwordRamon"});
+        usersData.put("ramon",   new String[]{"23456733H", "123456"});
     }
 
     @Override

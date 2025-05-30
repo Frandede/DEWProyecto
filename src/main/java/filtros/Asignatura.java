@@ -21,4 +21,7 @@ public class Asignatura {
     public void setNota(String nota) {
         this.nota = nota;
     }
+    public String getAsignaturasDeProfesor() {
+    	return asignatura;
+    }
 }
