@@ -61,6 +61,9 @@
   <user username="minerva" password="1234" roles="rolalu"/>
 
   <!-- usuario “profesor” -->
-  <user username="ramon" password="claveRamon" roles="rolpro"/>
+  <user username="ramon" password="1234" roles="rolpro"/>
+  <user username="pedro" password="1234" roles="rolpro"/>
+  <user username="manoli" password="1234" roles="rolpro"/>
+  <user username="joan" password="1234" roles="rolpro"/>
 </tomcat-users>
 
