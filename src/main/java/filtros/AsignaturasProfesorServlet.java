@@ -107,12 +107,12 @@ public class AsignaturasProfesorServlet extends HttpServlet {
             out.println("</a>");
             out.println("</div>");
 
-            // 10. Scripts JavaScript con las mejoras
+            // 10. Scripts JavaScript con todas las mejoras
             out.println("<script>");
             out.println("function cargarAlumnos(asignatura, boton) {");
             out.println("  const contenedor = document.getElementById('alumnos-' + asignatura);");
             out.println("  ");
-            out.println("  // Si ya está visible, ocultamos y cambiamos el botón");
+            out.println("  // Comportamiento de toggle (mostrar/ocultar)");
             out.println("  if(contenedor.style.display === 'block') {");
             out.println("    contenedor.style.display = 'none';");
             out.println("    boton.innerHTML = '<i class=\"bi bi-people-fill\"></i> Ver Alumnos';");
@@ -121,11 +121,12 @@ public class AsignaturasProfesorServlet extends HttpServlet {
             out.println("    return;");
             out.println("  }");
             out.println("  ");
-            out.println("  // Si no está visible, mostramos y cambiamos el botón");
+            out.println("  // Mostrar contenido");
             out.println("  const spinnerHtml = '<div class=\"d-flex justify-content-center mt-3\"><div class=\"spinner-border text-primary\" role=\"status\"><span class=\"visually-hidden\">Cargando...</span></div></div>';");
             out.println("  contenedor.innerHTML = spinnerHtml;");
             out.println("  contenedor.style.display = 'block';");
             out.println("  ");
+            out.println("  // Cambiar apariencia del botón");
             out.println("  boton.innerHTML = '<i class=\"bi bi-people-fill\"></i> Ocultar Alumnos';");
             out.println("  boton.classList.remove('btn-success');");
             out.println("  boton.classList.add('btn-danger');");
@@ -133,6 +134,7 @@ public class AsignaturasProfesorServlet extends HttpServlet {
             out.println("  // Deshabilitar botón durante la carga");
             out.println("  boton.disabled = true;");
             out.println("  ");
+            out.println("  // Obtener datos de alumnos");
             out.println("  fetch('" + req.getContextPath() + "/profesores/alumnos-por-asignatura?asignatura=' + encodeURIComponent(asignatura))");
             out.println("    .then(response => {");
             out.println("      if (!response.ok) {");
@@ -147,7 +149,7 @@ public class AsignaturasProfesorServlet extends HttpServlet {
             out.println("    .then(alumnos => {");
             out.println("      let html = '';");
             out.println("      if (!alumnos || alumnos.length === 0) {");
-            out.println("        html = '<div class=\"alert alert-info mt-3\">No hay alumnos matriculados en esta asignatura o no se pudieron cargar.</div>';");
+            out.println("        html = '<div class=\"alert alert-info mt-3\">No hay alumnos matriculados en esta asignatura.</div>';");
             out.println("      } else {");
             out.println("        html = '<div class=\"table-responsive mt-3\">' +");
             out.println("               '<table class=\"table table-hover table-sm\">' +");
@@ -155,10 +157,13 @@ public class AsignaturasProfesorServlet extends HttpServlet {
             out.println("               '<tbody>';");
             out.println("        ");
             out.println("        alumnos.forEach(alumno => {");
+            out.println("          const nota = alumno.additions1Drop3 || 'Sin calificar';");
+            out.println("          const notaDisplay = nota === 'Sin calificar' ? 'Sin nota' : nota;");
+            out.println("          ");
             out.println("          html += '<tr>' +");
             out.println("                  '<td>' + (alumno.additions1Drop1 || 'N/A') + '</td>' +");
             out.println("                  '<td>' + (alumno.additions1Drop2 || 'N/A') + '</td>' +");
-            out.println("                  '<td><span class=\"badge ' + getColorNota(alumno.additions1Drop3) + '\">' + (alumno.additions1Drop3 || 'Sin nota') + '</span></td>' +");
+            out.println("                  '<td><span class=\"badge ' + getColorNota(nota) + '\">' + notaDisplay + '</span></td>' +");
             out.println("                  '<td><button class=\"btn btn-sm btn-outline-primary\" onclick=\"editarNota(\\'' + asignatura + '\\',\\'' + (alumno.additions1Drop2 || '') + '\\',this)\"><i class=\"bi bi-pencil\"></i> Editar</button></td>' +");
             out.println("                  '</tr>';");
             out.println("        });");
@@ -173,14 +178,14 @@ public class AsignaturasProfesorServlet extends HttpServlet {
             out.println("      boton.disabled = false;");
             out.println("    })");
             out.println("    .catch(error => {");
-            out.println("      console.error('Error en la solicitud fetch o procesamiento:', error);");
+            out.println("      console.error('Error al cargar alumnos:', error);");
             out.println("      contenedor.innerHTML = '<div class=\"alert alert-danger mt-3\">Error al cargar alumnos: ' + error.message + '</div>';");
             out.println("      boton.disabled = false;");
             out.println("    });");
             out.println("}");
             out.println("");
             out.println("function getColorNota(nota) {");
-            out.println("  if (!nota) return 'bg-secondary';");
+            out.println("  if (!nota || nota === 'Sin calificar') return 'bg-secondary';");
             out.println("  const notaNum = parseFloat(nota);");
             out.println("  if (isNaN(notaNum)) return 'bg-secondary';");
             out.println("  if (notaNum >= 9) return 'bg-success';");
@@ -190,13 +195,15 @@ public class AsignaturasProfesorServlet extends HttpServlet {
             out.println("}");
             out.println("");
             out.println("function editarNota(asignatura, dniAlumno, boton) {");
-            out.println("  console.log('Editar nota para', asignatura, dniAlumno);");
+            out.println("  console.log('Editar nota para:', asignatura, dniAlumno);");
             out.println("  // Implementar lógica de edición aquí");
+            out.println("  alert('Editar nota para ' + dniAlumno + ' en ' + asignatura);");
             out.println("}");
             out.println("");
             out.println("function calcularMedia(asignatura) {");
-            out.println("  console.log('Calcular media para', asignatura);");
+            out.println("  console.log('Calcular media para:', asignatura);");
             out.println("  // Implementar lógica de cálculo de media aquí");
+            out.println("  alert('Calcular media para ' + asignatura);");
             out.println("}");
             out.println("</script>");
 
