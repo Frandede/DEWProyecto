@@ -54,16 +54,16 @@
   <role rolename="rolpro"/>
 
   <!-- Usuarios alumnos -->
-  <user username="pepe"  password="1234"  roles="rolalu"/>
-  <user username="maria" password="1234" roles="rolalu"/>
-  <user username="miguel" password="1234" roles="rolalu"/>
-  <user username="laura" password="1234" roles="rolalu"/>
-  <user username="minerva" password="1234" roles="rolalu"/>
+  <user username="pepe"  password="123456"  roles="rolalu"/>
+  <user username="maria" password="123456" roles="rolalu"/>
+  <user username="miguel" password="123456" roles="rolalu"/>
+  <user username="laura" password="123456" roles="rolalu"/>
+  <user username="minerva" password="123456" roles="rolalu"/>
 
   <!-- usuario “profesor” -->
-  <user username="ramon" password="1234" roles="rolpro"/>
-  <user username="pedro" password="1234" roles="rolpro"/>
-  <user username="manoli" password="1234" roles="rolpro"/>
-  <user username="joan" password="1234" roles="rolpro"/>
+  <user username="ramon" password="123456" roles="rolpro"/>
+  <user username="pedro" password="123456" roles="rolpro"/>
+  <user username="manoli" password="123456" roles="rolpro"/>
+  <user username="joan" password="123456" roles="rolpro"/>
 </tomcat-users>
 
