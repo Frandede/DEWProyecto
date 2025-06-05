@@ -149,25 +149,32 @@ asignaturas_todas=( "${asignaturas_existentes[@]}" "${asignaturas_nuevas[@]}" )
 matricular_alumno() {
   local alumno_dni="$1"
   local acronimo="$2"
-  echo "📚 Matriculando alumno $alumno_dni en $acronimo..."
-  curl -s -X POST \
-    "http://localhost:9090/CentroEducativo/asignaturas/$acronimo/alumnos" \
-    -H "Accept: text/plain" \
-    -H "Content-Type: application/json" \
-    -b admin_cookie.txt -c admin_cookie.txt \
-    -d "\"$alumno_dni\"" \
-    >/dev/null
-}
+  echo "📚 Matriculando alumno $alumno_dni en $acronimo..." # <-- ESTE DEBE ESTAR
 
-echo "🚀 Matriculando nuevos alumnos en DEW, IAP, DCU e IPC..."
-for alum in "${nuevos_alumnos[@]}"; do
-  IFS=',' read -r dni _ <<< "$alum"
-  for asig in "${asignaturas_todas[@]}"; do
-    matricular_alumno "$dni" "$asig"
-  done
-done
-echo "✅ Matrículas de nuevos alumnos completadas."
-echo
+  local http_status_code
+  local response_body
+
+  response_body=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST \
+    "http://localhost:9090/CentroEducativo/asignaturas/$acronimo/alumnos" \
+    -H "Accept: application/json" \
+    -H "Content-Type: application/json" \
+    -b admin_cookie.txt \
+    -d "\"$alumno_dni\"")
+
+  http_status_code=$(echo "$response_body" | grep "HTTP_STATUS:" | sed 's/.*HTTP_STATUS://')
+  actual_response_body=$(echo "$response_body" | sed '/HTTP_STATUS:/d')
+
+  if [[ "$http_status_code" -ge 200 && "$http_status_code" -lt 300 ]]; then
+    echo "✅  Matrícula de $alumno_dni en $acronimo EXITOSA (HTTP $http_status_code)" # <-- ESTE
+  else
+    echo "❌ ERROR al matricular $alumno_dni en $acronimo (HTTP $http_status_code)." # <-- O ESTE
+    if [[ -n "$actual_response_body" ]]; then
+      echo "   Respuesta del servidor: $actual_response_body"
+    else
+      echo "   El servidor no devolvió un cuerpo en la respuesta."
+    fi
+  fi
+}
 
 ########################################
 # 11. ASIGNACIÓN DE PROFESORES A ASIGNATURAS

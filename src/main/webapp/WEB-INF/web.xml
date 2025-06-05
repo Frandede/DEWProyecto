@@ -14,13 +14,13 @@
 
     <filter-mapping>
         <filter-name>Logs</filter-name>
-        <url-pattern>/*</url-pattern>
+        <url-pattern>/temp</url-pattern>
     </filter-mapping>
     
     
     
     <login-config>
-    <auth-method>BASIC</auth-method>
+    <auth-method>FORM</auth-method>
     <form-login-config>
         <form-login-page>/login.html</form-login-page>
         <form-error-page>/error.html</form-error-page>
