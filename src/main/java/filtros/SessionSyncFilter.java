@@ -51,6 +51,7 @@ public class SessionSyncFilter implements Filter {
         // 0) Permitir acceso libre a página de login y recursos públicos
         if (uri.equals(context + "/") ||
             uri.equals(context + "/index.html") ||
+            uri.equals(context + "/login.html") ||
             uri.startsWith(context + "/static/") ||
             uri.startsWith(context + "/css/") ||
             uri.startsWith(context + "/js/") ||

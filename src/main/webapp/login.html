@@ -23,7 +23,7 @@
              username input name="j_username"
              password input name="j_password"
         -->
-        <form method="POST" action="j_security_check">
+        <form method="POST" action="${pageContext.request.contextPath}/j_security_check">
             <div>
                 <label for="username">Usuario:</label>
                 <input type="text" id="username" name="j_username" required>

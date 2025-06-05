@@ -14,7 +14,7 @@
 
     <filter-mapping>
         <filter-name>Logs</filter-name>
-        <url-pattern>/temp</url-pattern>
+        <url-pattern>/tmp</url-pattern>
     </filter-mapping>
     
     
