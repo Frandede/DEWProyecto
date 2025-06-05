@@ -10,9 +10,9 @@
 # - Cada profesor sólo asigna nota en las asignaturas que imparte.
 
 ########################################
-# 1. LOGIN ADMINISTRADOR                #
+# 1. LOGIN ADMINISTRADOR               #
 ########################################
-echo "🔐 Autenticando administrador..."
+echo " Autenticando administrador..."
 ADMIN_KEY=$(curl -s --data '{"dni":"111111111","password":"654321"}' \
   -X POST -H "Content-Type: application/json" \
   http://localhost:9090/CentroEducativo/login \
@@ -38,7 +38,7 @@ echo "✅ (Si no existía, IPC ha sido creada.)"
 echo
 
 ########################################
-# 3. LISTADO DE ALUMNOS EXISTENTES      #
+# 3. LISTADO DE ALUMNOS EXISTENTES     #
 ########################################
 alumnos_existentes=(
   "12345678W"   # Pepe García Sánchez
@@ -49,7 +49,7 @@ alumnos_existentes=(
 )
 
 ########################################
-# 4. LISTADO DE PROFESORES EXISTENTES   #
+# 4. LISTADO DE PROFESORES EXISTENTES  #
 ########################################
 profesores_existentes=(
   "23456733H"   # Ramón García
@@ -59,7 +59,7 @@ profesores_existentes=(
 )
 
 ########################################
-# 5. CREAR NUEVOS PROFESORES            #
+# 5. CREAR NUEVOS PROFESORES           #
 ########################################
 nuevos_profesores=(
   "78901234X,Ana,Lopez"
@@ -78,7 +78,7 @@ add_profesor() {
     >/dev/null
 }
 
-echo "🚀 Creando nuevos profesores..."
+echo " Creando nuevos profesores..."
 for prof in "${nuevos_profesores[@]}"; do
   IFS=',' read -r dni nombre apellidos <<< "$prof"
   add_profesor "$dni" "$nombre" "$apellidos"
@@ -87,7 +87,7 @@ echo "✅ Profesores nuevos creados."
 echo
 
 ########################################
-# 6. CREAR NUEVOS ALUMNOS               #
+# 6. CREAR NUEVOS ALUMNOS              #
 ########################################
 nuevos_alumnos=(
   "45678912Z,Lucia,Lopez Morales"
@@ -107,7 +107,7 @@ add_alumno() {
     >/dev/null
 }
 
-echo "🚀 Creando nuevos alumnos..."
+echo " Creando nuevos alumnos..."
 for alum in "${nuevos_alumnos[@]}"; do
   IFS=',' read -r dni nombre apellidos <<< "$alum"
   add_alumno "$dni" "$nombre" "$apellidos"
@@ -128,40 +128,41 @@ done
 # 8. LISTADO COMPLETO DE PROFESORES PARA NOTAS
 ########################################
 declare -A profesores_clave=()
-for prof in "${profesores_existentes[@]}"; do
-  profesores_clave["$prof"]="123456"
+# Populate with existing professors
+for prof_dni in "${profesores_existentes[@]}"; do
+  profesores_clave["$prof_dni"]="123456" # Assuming a default password for existing
 done
-for prof in "${nuevos_profesores[@]}"; do
-  IFS=',' read -r dni _ <<< "$prof"
+# Populate with new professors
+for prof_full in "${nuevos_profesores[@]}"; do
+  IFS=',' read -r dni _ <<< "$prof_full"
   profesores_clave["$dni"]="123456"
 done
 
+
 ########################################
-# 9. LISTA DE ASIGNATURAS               #
+# 9. LISTA DE ASIGNATURAS              #
 ########################################
 asignaturas_existentes=( "DEW" "IAP" "DCU" )
 asignaturas_nuevas=( "IPC" )
 asignaturas_todas=( "${asignaturas_existentes[@]}" "${asignaturas_nuevas[@]}" )
 
 ########################################
-# 10. MATRÍCULA DE NUEVOS ALUMNOS       #
+# 10. MATRÍCULA DE NUEVOS ALUMNOS      #
 ########################################
 matricular_alumno() {
   local alumno_dni="$1"
   local acronimo="$2"
-  echo "📚 Matriculando alumno $alumno_dni en $acronimo..."
-  curl -s -X POST \
-    "http://localhost:9090/CentroEducativo/asignaturas/$acronimo/alumnos" \
-    -H "Accept: text/plain" \
+  echo " Matriculando alumno $alumno_dni en asignatura $acronimo..."
+  curl -s -X POST "http://localhost:9090/CentroEducativo/asignaturas/$acronimo/alumnos?key=$ADMIN_KEY" \
     -H "Content-Type: application/json" \
     -b admin_cookie.txt -c admin_cookie.txt \
-    -d "\"$alumno_dni\"" \
+    -d "$alumno_dni" \
     >/dev/null
 }
 
-echo "🚀 Matriculando nuevos alumnos en DEW, IAP, DCU e IPC..."
-for alum in "${nuevos_alumnos[@]}"; do
-  IFS=',' read -r dni _ <<< "$alum"
+echo " Matriculando nuevos alumnos en DEW, IAP, DCU e IPC..."
+for alum_full in "${nuevos_alumnos[@]}"; do
+  IFS=',' read -r dni _ <<< "$alum_full"
   for asig in "${asignaturas_todas[@]}"; do
     matricular_alumno "$dni" "$asig"
   done
@@ -172,19 +173,50 @@ echo
 ########################################
 # 11. ASIGNACIÓN DE PROFESORES A ASIGNATURAS
 ########################################
+# This mapping dictates which professors *can* teach which subject
 declare -A profesor_para_asign
 profesor_para_asign["DEW"]="23456733H 65748923M"
 profesor_para_asign["IAP"]="23456733H 10293756L"
 profesor_para_asign["DCU"]="10293756L 06374291A"
 profesor_para_asign["IPC"]="06374291A 65748923M"
 
-profesor_para_asign["DCU"]+=" 78901234X"
-profesor_para_asign["IPC"]+=" 78901234X"
-profesor_para_asign["IAP"]+=" 89012345Y"
-profesor_para_asign["IPC"]+=" 89012345Y"
+# Add new professors to existing assignments
+profesor_para_asign["DCU"]+=" 78901234X" # Ana Lopez teaches DCU
+profesor_para_asign["IPC"]+=" 78901234X" # Ana Lopez teaches IPC
+profesor_para_asign["IAP"]+=" 89012345Y" # Luis Martinez teaches IAP
+profesor_para_asign["IPC"]+=" 89012345Y" # Luis Martinez teaches IPC
+
+# Function to assign a subject to a professor
+assign_prof_to_subject() {
+  local prof_dni="$1"
+  local acronimo="$2"
+  echo " Asignando asignatura $acronimo a profesor $prof_dni..."
+  # CRITICAL CHANGE: Sending the acronym as a plain string, not a JSON string.
+  curl -s -X POST "http://localhost:9090/CentroEducativo/profesores/$prof_dni/asignaturas?key=$ADMIN_KEY" \
+    -H "Content-Type: application/json" \
+    -b admin_cookie.txt -c admin_cookie.txt \
+    -d "$acronimo" \
+    >/dev/null
+}
+
+echo " Asignando asignaturas a profesores..."
+# Assign existing professors to their subjects
+for asig in "${!profesor_para_asign[@]}"; do
+    profs=( ${profesor_para_asign[$asig]} )
+    for prof_dni in "${profs[@]}"; do
+        # Only assign if the professor is one of the initially defined ones
+        # or new professors (already created)
+        if [[ " ${profesores_existentes[@]} " =~ " ${prof_dni} " || "$(echo "${nuevos_profesores[@]}" | grep "$prof_dni")" ]]; then
+            assign_prof_to_subject "$prof_dni" "$asig"
+        fi
+    done
+done
+echo "✅ Asignación de asignaturas a profesores completada."
+echo
+
 
 ########################################
-# 12. OBTENER CLAVE DE PROFESOR         #
+# 12. OBTENER CLAVE DE PROFESOR        #
 ########################################
 get_prof_key() {
   local prof_dni="$1"
@@ -201,7 +233,7 @@ get_prof_key() {
 }
 
 ########################################
-# 13. ASIGNAR NOTA (POR PROFESOR)       #
+# 13. ASIGNAR NOTA (POR PROFESOR)      #
 ########################################
 asignar_nota() {
   local alumno_dni="$1"
@@ -216,7 +248,7 @@ asignar_nota() {
     return
   fi
 
-  echo "📝 Profesor $prof_dni asigna nota $nota a alumno $alumno_dni en $acronimo"
+  echo " Profesor $prof_dni asigna nota $nota a alumno $alumno_dni en $acronimo"
   curl -s -X PUT \
     "http://localhost:9090/CentroEducativo/alumnos/$alumno_dni/asignaturas/$acronimo?key=$prof_key" \
     -H "Content-Type: application/json" \
@@ -225,9 +257,9 @@ asignar_nota() {
 }
 
 ########################################
-# 14. GENERAR Y ASIGNAR NOTAS           #
+# 14. GENERAR Y ASIGNAR NOTAS          #
 ########################################
-echo "🚀 Asignando notas de ejemplo..."
+echo " Asignando notas de ejemplo..."
 
 for alumno in "${alumnos_todos[@]}"; do
   if printf '%s\n' "${alumnos_existentes[@]}" | grep -qx "$alumno"; then
@@ -251,4 +283,4 @@ done
 
 echo "✅ Notas asignadas a todos los alumnos (existentes y nuevos)."
 echo
-echo "🎉 ¡Proceso finalizado! Cada alumno tiene sus notas y los nuevos profesores han impartido sus asignaturas."
+echo " ¡Proceso finalizado! Cada alumno tiene sus notas y los nuevos profesores han impartido sus asignaturas."
