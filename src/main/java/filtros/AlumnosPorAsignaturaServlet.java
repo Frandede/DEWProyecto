@@ -6,10 +6,13 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
 @WebServlet("/profesores/alumnos-por-asignatura")
 public class AlumnosPorAsignaturaServlet extends HttpServlet {
@@ -46,10 +49,36 @@ public class AlumnosPorAsignaturaServlet extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
-        throws ServletException, IOException {
-        // Método no permitido
-        resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, 
-                      "Método POST no soportado");
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) 
+            throws ServletException, IOException {
+        
+        HttpSession session = req.getSession(false);
+        if (session == null || session.getAttribute("dni") == null) {
+            resp.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
+        }
+
+        // Leer y parsear el JSON
+        JsonObject jsonRequest = gson.fromJson(req.getReader(), JsonObject.class);
+        String action = jsonRequest.get("action").getAsString();
+        
+        if ("update-grade".equals(action)) {
+            String asignatura = jsonRequest.get("asignatura").getAsString();
+            String dniAlumno = jsonRequest.get("dniAlumno").getAsString();
+            Float nota = jsonRequest.get("nota").getAsFloat();
+            String dniProfesor = jsonRequest.get("dniProfesor").getAsString();
+            String key = (String) session.getAttribute("key");
+
+            // Actualizar la nota
+            boolean success = CentroEducativoClient.actualizarNota(
+                asignatura, dniAlumno, nota, dniProfesor, key
+            );
+
+            // Enviar respuesta JSON
+            resp.setContentType("application/json");
+            JsonObject response = new JsonObject();
+            response.addProperty("success", success);
+            resp.getWriter().write(gson.toJson(response));
+        }
     }
 }

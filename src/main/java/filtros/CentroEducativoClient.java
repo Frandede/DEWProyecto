@@ -161,34 +161,38 @@ public class CentroEducativoClient {
         }
     }
 
-    public static boolean actualizarNota(String asignatura, String dniAlumno, String nota, String dniProfesor, String key) {
+    public static boolean actualizarNota(String asignatura, String dniAlumno, Float nota, String dniProfesor, String key) {
         HttpURLConnection con = null;
         try {
-            String urlStr = String.format("%s/asignaturas/%s/alumnos/%s/nota",
+            String urlStr = String.format("%s/alumnos/%s/asignaturas/%s?key=%s",
                 BASE_URL,
+                URLEncoder.encode(dniAlumno, StandardCharsets.UTF_8.name()),
                 URLEncoder.encode(asignatura, StandardCharsets.UTF_8.name()),
-                URLEncoder.encode(dniAlumno, StandardCharsets.UTF_8.name()));
+                URLEncoder.encode(key, StandardCharsets.UTF_8.name()));
             
             System.out.println("URL actualizarNota: " + urlStr);
 
             URL url = new URL(urlStr);
             con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("PUT");
-            con.setRequestProperty("Content-Type", "application/json");
-            con.setRequestProperty("Authorization", "Bearer " + key);
+            con.setRequestProperty("Content-Type", "application/json"); // Cambiado a JSON
             if (sessionCookie != null) {
                 con.setRequestProperty("Cookie", sessionCookie);
             }
             con.setDoOutput(true);
 
+            // Crear objeto JSON con la nota
             JsonObject payload = new JsonObject();
             payload.addProperty("nota", nota);
             payload.addProperty("profesor", dniProfesor);
-            payload.addProperty("key", key);
 
             try (OutputStream os = con.getOutputStream()) {
-                os.write(gson.toJson(payload).getBytes(StandardCharsets.UTF_8));
+                os.write(gson.toJson(payload).getBytes(StandardCharsets.UTF_8)); // Enviar como JSON
             }
+
+           
+        
+    
 
             int status = con.getResponseCode();
             System.out.println("Respuesta de actualizarNota: " + status);

@@ -9,17 +9,17 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
-import com.google.gson.reflect.TypeToken;
+import filtros.CentroEducativoClient;
 
 @WebServlet("/profesores/asignaturas")
 public class AsignaturasProfesorServlet extends HttpServlet {
-    
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        
+
         HttpSession session = req.getSession(false);
-        if (session == null || session.getAttribute("dni") == null) {
+        if (session == null || session.getAttribute("dni") == null || session.getAttribute("key") == null) {
             resp.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Debe iniciar sesión para acceder a esta página");
             return;
         }
@@ -29,10 +29,10 @@ public class AsignaturasProfesorServlet extends HttpServlet {
 
         System.out.println("Solicitud de asignaturas para profesor: " + dni);
 
-        List<AsignaturaProfesor> asignaturas = CentroEducativoClient.getAsignaturasDeProfesor(dni, key); 
+        List<AsignaturaProfesor> asignaturas = CentroEducativoClient.getAsignaturasDeProfesor(dni, key);
 
         resp.setContentType("text/html;charset=UTF-8");
-        
+
         try (PrintWriter out = resp.getWriter()) {
             out.println("<!DOCTYPE html>");
             out.println("<html lang='es'>");
@@ -64,7 +64,7 @@ public class AsignaturasProfesorServlet extends HttpServlet {
             out.println("</head>");
             out.println("<body>");
             out.println("<div class='container'>");
-            
+
             // Botón de cerrar sesión en la parte superior derecha
             out.println("<div class='d-flex justify-content-end mb-4'>");
             out.println("<a href='" + req.getContextPath() + "/logout' class='btn btn-outline-danger'>");
@@ -110,28 +110,23 @@ public class AsignaturasProfesorServlet extends HttpServlet {
             out.println("<script>");
             out.println("window.sessionStorage.setItem('dni', '" + dni + "');");
             out.println("window.sessionStorage.setItem('key', '" + key + "');");
-            
+
             out.println("function cargarAlumnos(asignatura, boton) {");
             out.println("  const contenedor = document.getElementById('alumnos-' + asignatura);");
-            out.println("  ");
-            out.println("  if(contenedor.style.display === 'block') {");
+            out.println("  if (contenedor.style.display === 'block') {");
             out.println("    contenedor.style.display = 'none';");
             out.println("    boton.innerHTML = '<i class=\"bi bi-people-fill\"></i> Ver Alumnos';");
             out.println("    boton.classList.remove('btn-danger');");
             out.println("    boton.classList.add('btn-success');");
             out.println("    return;");
             out.println("  }");
-            out.println("  ");
             out.println("  const spinnerHtml = '<div class=\"d-flex justify-content-center mt-3\"><div class=\"spinner-border text-primary\" role=\"status\"><span class=\"visually-hidden\">Cargando...</span></div></div>';");
             out.println("  contenedor.innerHTML = spinnerHtml;");
             out.println("  contenedor.style.display = 'block';");
-            out.println("  ");
             out.println("  boton.innerHTML = '<i class=\"bi bi-people-fill\"></i> Ocultar Alumnos';");
             out.println("  boton.classList.remove('btn-success');");
             out.println("  boton.classList.add('btn-danger');");
-            out.println("  ");
             out.println("  boton.disabled = true;");
-            out.println("  ");
             out.println("  fetch('alumnos-por-asignatura?asignatura=' + encodeURIComponent(asignatura))");
             out.println("    .then(response => {");
             out.println("      if (!response.ok) {");
@@ -152,11 +147,9 @@ public class AsignaturasProfesorServlet extends HttpServlet {
             out.println("               '<table class=\"table table-hover table-sm\">' +");
             out.println("               '<thead><tr><th>Nombre</th><th>DNI</th><th>Nota</th><th>Acciones</th></tr></thead>' +");
             out.println("               '<tbody>';");
-            out.println("        ");
             out.println("        alumnos.forEach(alumno => {");
             out.println("          const nota = alumno.additions1Drop3 || 'Sin calificar';");
             out.println("          const notaDisplay = nota === 'Sin calificar' ? 'Sin nota' : nota;");
-            out.println("          ");
             out.println("          html += '<tr>' +");
             out.println("                  '<td>' + (alumno.additions1Drop1 || 'N/A') + '</td>' +");
             out.println("                  '<td>' + (alumno.additions1Drop2 || 'N/A') + '</td>' +");
@@ -164,7 +157,6 @@ public class AsignaturasProfesorServlet extends HttpServlet {
             out.println("                  '<td><button class=\"btn btn-sm btn-outline-primary\" onclick=\"editarNota(\\'' + asignatura + '\\',\\'' + (alumno.additions1Drop2 || '') + '\\', this)\"><i class=\"bi bi-pencil\"></i> Editar</button></td>' +");
             out.println("                  '</tr>';");
             out.println("        });");
-            out.println("        ");
             out.println("        html += '</tbody></table>' +");
             out.println("               '<div class=\"media-container\">' +");
             out.println("               '<button class=\"btn btn-primary\" onclick=\"calcularMedia(\\'' + asignatura + '\\')\">' +");
@@ -173,7 +165,6 @@ public class AsignaturasProfesorServlet extends HttpServlet {
             out.println("               '</div>' +");
             out.println("               '</div>';");
             out.println("      }");
-            out.println("      ");
             out.println("      contenedor.innerHTML = html;");
             out.println("      boton.disabled = false;");
             out.println("    })");
@@ -181,129 +172,165 @@ public class AsignaturasProfesorServlet extends HttpServlet {
             out.println("      console.error('Error al cargar alumnos:', error);");
             out.println("      contenedor.innerHTML = '<div class=\"alert alert-danger mt-3\">Error al cargar alumnos: ' + error.message + '</div>';");
             out.println("      boton.disabled = false;");
+            out.println("      boton.innerHTML = '<i class=\"bi bi-people-fill\"></i> Ver Alumnos';");
+            out.println("      boton.classList.remove('btn-danger');");
+            out.println("      boton.classList.add('btn-success');");
             out.println("    });");
             out.println("}");
 
             out.println("function getColorNota(nota) {");
-            out.println("  if (!nota || nota === 'Sin calificar') return 'badge-secondary';");
-            out.println("  const notaNum = parseFloat(nota);");
-            out.println("  if (isNaN(notaNum)) return 'badge-secondary';");
-            out.println("  if (notaNum >= 9) return 'badge-success';");
-            out.println("  if (notaNum >= 7) return 'badge-info';");
-            out.println("  if (notaNum >= 5) return 'badge-primary';");
-            out.println("  return 'badge-danger';");
+            out.println("  if (nota === 'Sin calificar') return 'badge-secondary';");
+            out.println("  const num = parseFloat(nota);");
+            out.println("  if (isNaN(num)) return 'badge-secondary';");
+            out.println("  if (num < 5) return 'badge-danger';");
+            out.println("  if (num < 7) return 'badge-info';");
+            out.println("  if (num < 9) return 'badge-primary';");
+            out.println("  return 'badge-success';");
             out.println("}");
 
             out.println("function editarNota(asignatura, dniAlumno, boton) {");
             out.println("  const fila = boton.closest('tr');");
             out.println("  const celdaNota = fila.querySelector('td:nth-child(3)');");
-            out.println("  const notaActual = celdaNota.querySelector('.badge').textContent.trim();");
-            out.println("  ");
-            out.println("  const nuevaNota = prompt('Introduzca la nueva nota para ' + dniAlumno + ':', notaActual === 'Sin nota' ? '' : notaActual);");
-            out.println("  if (nuevaNota === null || nuevaNota.trim() === '') return;");
-            out.println("  ");
-            out.println("  const originalHtml = boton.innerHTML;");
-            out.println("  boton.innerHTML = '<span class=\"spinner-border spinner-border-sm\" role=\"status\" aria-hidden=\"true\"></span> Actualizando...';");
+            out.println("  const actualNota = celdaNota.textContent.trim() === 'Sin nota' ? '' : celdaNota.textContent.trim();");
+            out.println("  celdaNota.innerHTML = '<input type=\"number\" min=\"0\" max=\"10\" step=\"0.1\" class=\"form-control form-control-sm\" value=\"' + actualNota + '\">';");
+            out.println("  boton.textContent = 'Guardar';");
+            out.println("  boton.onclick = function() { guardarNota(asignatura, dniAlumno, boton); };");
+            out.println("}");
+
+            out.println("function guardarNota(asignatura, dniAlumno, boton) {");
+            out.println("  const fila = boton.closest('tr');");
+            out.println("  const inputNota = fila.querySelector('td:nth-child(3) input');");
+            out.println("  const nuevaNota = inputNota.value.trim();");
+            out.println("  if (nuevaNota === '') {");
+            out.println("    alert('La nota no puede estar vacía.');");
+            out.println("    return;");
+            out.println("  }");
+            out.println("  const numNota = parseFloat(nuevaNota);");
+            out.println("  if (isNaN(numNota) || numNota < 0 || numNota > 10) {");
+            out.println("    alert('La nota debe ser un número entre 0 y 10.');");
+            out.println("    return;");
+            out.println("  }");
+            out.println("  const dniProfesor = window.sessionStorage.getItem('dni');");
+            out.println("  const keyProfesor = window.sessionStorage.getItem('key');");
             out.println("  boton.disabled = true;");
-            out.println("  ");
             out.println("  fetch('alumnos-por-asignatura', {");
             out.println("    method: 'POST',");
-            out.println("    headers: {");
-            out.println("      'Content-Type': 'application/json',");
-            out.println("      'Authorization': 'Bearer ' + window.sessionStorage.getItem('key')");
-            out.println("    },");
+            out.println("    headers: { 'Content-Type': 'application/json' },");
             out.println("    body: JSON.stringify({");
             out.println("      action: 'update-grade',");
             out.println("      asignatura: asignatura,");
             out.println("      dniAlumno: dniAlumno,");
-            out.println("      nota: nuevaNota.trim(),");
-            out.println("      dniProfesor: window.sessionStorage.getItem('dni')");
+            out.println("      nota: numNota.toFloat(),");
+            out.println("      dniProfesor: dniProfesor");
             out.println("    })");
             out.println("  })");
-            out.println("  .then(response => {");
-            out.println("    if (!response.ok) throw new Error('Error en la respuesta del servidor');");
-            out.println("    return response.json();");
-            out.println("  })");
+            out.println("  .then(response => response.json())");
             out.println("  .then(data => {");
             out.println("    if (data.success) {");
-            out.println("      const badge = celdaNota.querySelector('.badge');");
-            out.println("      const notaMostrar = nuevaNota.trim() === '' ? 'Sin nota' : nuevaNota.trim();");
-            out.println("      badge.textContent = notaMostrar;");
-            out.println("      badge.className = 'badge ' + getColorNota(nuevaNota);");
-            out.println("      ");
-            out.println("      const feedback = document.createElement('span');");
-            out.println("      feedback.className = 'text-success ms-2';");
-            out.println("      feedback.innerHTML = '<i class=\"bi bi-check-circle-fill\"></i>';");
-            out.println("      boton.parentNode.appendChild(feedback);");
-            out.println("      setTimeout(() => feedback.remove(), 2000);");
+            out.println("      const celdaNota = fila.querySelector('td:nth-child(3)');");
+            out.println("      celdaNota.innerHTML = '<span class=\"badge ' + getColorNota(numNota) + '\">' + numNota + '</span>';");
+            out.println("      boton.textContent = 'Editar';");
+            out.println("      boton.disabled = false;");
+            out.println("      boton.onclick = function() { editarNota(asignatura, dniAlumno, boton); };");
+            out.println("      alert('Nota actualizada correctamente');");
             out.println("    } else {");
-            out.println("      throw new Error(data.message || 'No se pudo actualizar la nota');");
+            out.println("      alert('Error al actualizar la nota: ' + (data.message || 'Error desconocido'));");
+            out.println("      boton.disabled = false;");
             out.println("    }");
             out.println("  })");
             out.println("  .catch(error => {");
-            out.println("    console.error('Error al actualizar nota:', error);");
-            out.println("    alert('Error al actualizar la nota: ' + error.message);");
-            out.println("  })");
-            out.println("  .finally(() => {");
-            out.println("    boton.innerHTML = originalHtml;");
+            out.println("    alert('Error en la comunicación: ' + error.message);");
             out.println("    boton.disabled = false;");
             out.println("  });");
             out.println("}");
 
             out.println("function calcularMedia(asignatura) {");
-            out.println("  const contenedor = document.getElementById('alumnos-' + asignatura);");
-            out.println("  const tabla = contenedor.querySelector('table');");
-            out.println("  const resultadoMedia = document.getElementById('media-' + asignatura);");
-            out.println("  const boton = contenedor.querySelector('.btn-primary');");
-            out.println("  const originalHtml = boton.innerHTML;");
-            out.println("  ");
-            out.println("  boton.innerHTML = '<span class=\"spinner-border spinner-border-sm\" role=\"status\" aria-hidden=\"true\"></span> Calculando...';");
-            out.println("  boton.disabled = true;");
-            out.println("  resultadoMedia.innerHTML = '';");
-            out.println("  ");
-            out.println("  setTimeout(() => {");
-            out.println("    try {");
-            out.println("      const filas = tabla.querySelectorAll('tbody tr');");
+            out.println("  fetch('alumnos-por-asignatura?asignatura=' + encodeURIComponent(asignatura))");
+            out.println("    .then(response => response.json())");
+            out.println("    .then(alumnos => {");
             out.println("      let suma = 0;");
-            out.println("      let contador = 0;");
-            out.println("      ");
-            out.println("      filas.forEach(fila => {");
-            out.println("        const notaText = fila.querySelector('td:nth-child(3)').textContent.trim();");
-            out.println("        if (notaText && notaText !== 'Sin calificar' && notaText !== 'Sin nota') {");
-            out.println("          const nota = parseFloat(notaText);");
-            out.println("          if (!isNaN(nota)) {");
-            out.println("            suma += nota;");
-            out.println("            contador++;");
+            out.println("      let count = 0;");
+            out.println("      alumnos.forEach(alumno => {");
+            out.println("        const nota = alumno.additions1Drop3;");
+            out.println("        if (nota && nota !== 'Sin calificar') {");
+            out.println("          const num = parseFloat(nota);");
+            out.println("          if (!isNaN(num)) {");
+            out.println("            suma += num;");
+            out.println("            count++;");
             out.println("          }");
             out.println("        }");
             out.println("      });");
-            out.println("      ");
-            out.println("      const media = contador > 0 ? (suma / contador).toFixed(2) : '0.00';");
-            out.println("      resultadoMedia.innerHTML = '<strong>Media: ' + media + '</strong>';");
-            out.println("    } catch (error) {");
-            out.println("      console.error('Error al calcular media:', error);");
-            out.println("      resultadoMedia.innerHTML = '<span class=\"text-danger\">Error en cálculo</span>';");
-            out.println("    } finally {");
-            out.println("      boton.innerHTML = originalHtml;");
-            out.println("      boton.disabled = false;");
-            out.println("    }");
-            out.println("  }, 500);");
+            out.println("      const mediaSpan = document.getElementById('media-' + asignatura);");
+            out.println("      if (count === 0) {");
+            out.println("        mediaSpan.textContent = 'No hay notas para calcular.';");
+            out.println("      } else {");
+            out.println("        const media = (suma / count).toFixed(2);");
+            out.println("        mediaSpan.textContent = 'Nota media: ' + media;");
+            out.println("      }");
+            out.println("    });");
             out.println("}");
             out.println("</script>");
 
-            out.println("<script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js'></script>");
+            out.println("</div>");
             out.println("</body>");
             out.println("</html>");
-        } catch (Exception e) {
-            System.err.println("Error al generar la página:");
-            e.printStackTrace();
-            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error al generar la página");
         }
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "Método no permitido");
+
+        // Solo para ilustrar el ejemplo de actualizar nota, se puede mover a otro servlet si quieres.
+
+        StringBuilder sb = new StringBuilder();
+        try (var reader = req.getReader()) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+            }
+        }
+
+        String jsonString = sb.toString();
+
+        com.google.gson.Gson gson = new com.google.gson.Gson();
+        com.google.gson.JsonObject jsonObject = com.google.gson.JsonParser.parseString(jsonString).getAsJsonObject();
+
+        String action = jsonObject.has("action") ? jsonObject.get("action").getAsString() : "";
+
+        if ("update-grade".equals(action)) {
+            String asignatura = jsonObject.has("asignatura") ? jsonObject.get("asignatura").getAsString() : null;
+            String dniAlumno = jsonObject.has("dniAlumno") ? jsonObject.get("dniAlumno").getAsString() : null;
+            String notaStr = jsonObject.has("nota") ? jsonObject.get("nota").getAsString() : null;
+            String dniProfesor = jsonObject.has("dniProfesor") ? jsonObject.get("dniProfesor").getAsString() : null;
+            String key = jsonObject.has("key") ? jsonObject.get("key").getAsString() : null;
+
+            Float nota = null;
+            try {
+                if (notaStr != null && !notaStr.isBlank()) {
+                    nota = Float.parseFloat(notaStr);
+                }
+            } catch (NumberFormatException e) {
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                resp.setContentType("application/json;charset=UTF-8");
+                resp.getWriter().write("{\"success\":false,\"message\":\"Nota inválida\"}");
+                return;
+            }
+
+            // Aquí debes llamar a la lógica real para actualizar la nota en tu sistema.
+            // Ejemplo ficticio:
+            boolean actualizado = CentroEducativoClient.actualizarNota(asignatura, dniAlumno, nota, dniProfesor, key);
+
+
+            resp.setContentType("application/json;charset=UTF-8");
+            if (actualizado) {
+                resp.getWriter().write("{\"success\":true}");
+            } else {
+                resp.getWriter().write("{\"success\":false,\"message\":\"No se pudo actualizar la nota\"}");
+            }
+            return;
+        }
+
+        resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Acción no reconocida");
     }
 }
