@@ -34,6 +34,14 @@ public class AsignaturasAlumnoServlet extends HttpServlet {
                     + "<link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' rel='stylesheet'>"
                     + "</head><body class='p-5'>");
 
+            out.println("<nav class='navbar navbar-light bg-light mb-4'>"
+                    + "<div class='container-fluid'>"
+                    + "<span class='navbar-text'>Usuario: " + dni + "</span>"
+                    + "<a class='btn btn-outline-danger' href='" 
+                    + req.getContextPath() + "/logout'>Cerrar sesión</a>"
+                    + "</div></nav>");
+
+            out.println("<div class='container'>");
             out.println("<h1>Asignaturas de " + dni + "</h1>");
 
             if (asignaturas == null) {
@@ -42,30 +50,48 @@ public class AsignaturasAlumnoServlet extends HttpServlet {
                 out.println("<p>No tienes asignaturas inscritas.</p>");
             } else {
                 out.println("<table class='table table-striped'>"
-                        + "<thead><tr><th>Asignatura</th><th>Nota</th></tr></thead><tbody>");
-                for (Asignatura a : asignaturas) {
-                    String asignaturaNombre = a.getAsignaturasDeAlumno();
-                    String nota = (a.getNota() == null || a.getNota().isEmpty()) ? "—" : a.getNota();
-                    out.printf("<tr><td><a href='%s/alumno/nota?asignatura=%s'>%s</a></td><td>%s</td></tr>%n",
-                            req.getContextPath(), 
-                            asignaturaNombre, 
-                            asignaturaNombre, 
-                            nota);
+                        + "<thead><tr><th>Asignatura</th><th>GRUPO</th></tr></thead><tbody>");
+                
+                // Mostramos solo la primera fila con la lista del grupo
+                out.println("<tr>");
+                out.println("<td><a href='" + req.getContextPath() + "/alumno/nota?asignatura=" + 
+                           asignaturas.get(0).getAsignaturasDeAlumno() + "'>" + 
+                           asignaturas.get(0).getAsignaturasDeAlumno() + "</a></td>");
+                
+                // Celda con la lista del grupo (ocupa todas las filas)
+                out.println("<td rowspan='" + (asignaturas.size() + 1) + "'>");
+                out.println("<h4>GRUPO</h4>");
+                out.println("<ol class='list-group list-group-numbered'>");
+                out.println("<li class='list-group-item'>Jara Leal García</li>");
+                out.println("<li class='list-group-item'>Pau Zaragozá Carrascosa</li>");
+                out.println("<li class='list-group-item'>Aaron Montaraz Gómez</li>");
+                out.println("<li class='list-group-item'>Lluis Colomar García</li>");
+                out.println("<li class='list-group-item'>Fran de la Guía González</li>");
+                out.println("<li class='list-group-item'>Raúl Medrano Llopis</li>");
+                out.println("</ol>");
+                out.println("</td>");
+                out.println("</tr>");
+                
+                // Resto de asignaturas
+                for (int i = 1; i < asignaturas.size(); i++) {
+                    Asignatura a = asignaturas.get(i);
+                    out.println("<tr>");
+                    out.println("<td><a href='" + req.getContextPath() + "/alumno/nota?asignatura=" + 
+                              a.getAsignaturasDeAlumno() + "'>" + 
+                              a.getAsignaturasDeAlumno() + "</a></td>");
+                    out.println("</tr>");
                 }
+                
                 out.println("</tbody></table>");
-
-                // Botón para imprimir certificado
-                out.println("<form method='GET' action='certificado' class='mb-3'>");
-                out.println("<button type='submit' class='btn btn-primary'>Imprimir certificado</button>");
-                out.println("</form>");
             }
 
-            // Botón para cerrar sesión
-            out.println("<a href='" + req.getContextPath() + "/logout' class='btn btn-danger me-2'>Cerrar sesión</a>");
+            // Botón para imprimir certificado
+            out.println("<form method='GET' action='certificado' class='mb-3'>");
+            out.println("<button type='submit' class='btn btn-primary'>Imprimir certificado</button>");
+            out.println("</form>");
 
-            // Botón para volver
-           
-            out.println("</body></html>");
+            out.println("</div></body></html>");
         }
     }
+
 }

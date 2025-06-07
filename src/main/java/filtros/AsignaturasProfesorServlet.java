@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
+import com.google.gson.reflect.TypeToken;
 
 @WebServlet("/profesores/asignaturas")
 public class AsignaturasProfesorServlet extends HttpServlet {
@@ -17,28 +18,22 @@ public class AsignaturasProfesorServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         
-        // 1. Verificar sesión y autenticación
         HttpSession session = req.getSession(false);
         if (session == null || session.getAttribute("dni") == null) {
             resp.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Debe iniciar sesión para acceder a esta página");
             return;
         }
 
-        // 2. Obtener credenciales de la sesión
         String dni = (String) session.getAttribute("dni");
         String key = (String) session.getAttribute("key");
 
-        // 3. Registrar acceso para depuración
         System.out.println("Solicitud de asignaturas para profesor: " + dni);
 
-        // 4. Obtener las asignaturas del profesor
         List<AsignaturaProfesor> asignaturas = CentroEducativoClient.getAsignaturasDeProfesor(dni, key); 
 
-        // 5. Configurar respuesta
         resp.setContentType("text/html;charset=UTF-8");
         
         try (PrintWriter out = resp.getWriter()) {
-            // 6. Construir página HTML
             out.println("<!DOCTYPE html>");
             out.println("<html lang='es'>");
             out.println("<head>");
@@ -58,12 +53,25 @@ public class AsignaturasProfesorServlet extends HttpServlet {
             out.println(".asignatura-metadata { color: #6c757d; font-size: 0.9rem; margin-bottom: 1rem; }");
             out.println(".btn-ver-alumnos { width: 100%; }");
             out.println(".alumnos-container { margin-top: 1.5rem; display: none; }");
+            out.println(".media-container { display: flex; align-items: center; margin-top: 1rem; }");
+            out.println(".media-result { margin-left: 1rem; font-weight: 500; }");
+            out.println(".badge-secondary { background-color: #6c757d; }");
+            out.println(".badge-success { background-color: #28a745; }");
+            out.println(".badge-info { background-color: #17a2b8; }");
+            out.println(".badge-primary { background-color: #007bff; }");
+            out.println(".badge-danger { background-color: #dc3545; }");
             out.println("</style>");
             out.println("</head>");
             out.println("<body>");
             out.println("<div class='container'>");
             
-            // 7. Encabezado de la página
+            // Botón de cerrar sesión en la parte superior derecha
+            out.println("<div class='d-flex justify-content-end mb-4'>");
+            out.println("<a href='" + req.getContextPath() + "/logout' class='btn btn-outline-danger'>");
+            out.println("<i class='bi bi-box-arrow-left'></i> Cerrar sesión");
+            out.println("</a>");
+            out.println("</div>");
+
             out.println("<div class='card header-card mb-4'>");
             out.println("<div class='card-body'>");
             out.println("<h1 class='h4 mb-0'><i class='bi bi-book'></i> Asignaturas que imparte</h1>");
@@ -71,7 +79,6 @@ public class AsignaturasProfesorServlet extends HttpServlet {
             out.println("</div>");
             out.println("</div>");
 
-            // 8. Contenido principal - Listado de asignaturas
             if (asignaturas == null || asignaturas.isEmpty()) {
                 out.println("<div class='alert alert-warning'>No se encontraron asignaturas asignadas.</div>");
             } else {
@@ -100,19 +107,13 @@ public class AsignaturasProfesorServlet extends HttpServlet {
                 out.println("</div>");
             }
 
-            // 9. Pie de página con botón de logout
-            out.println("<div class='mt-4 text-center'>");
-            out.println("<a href='" + req.getContextPath() + "/logout' class='btn btn-danger'>");
-            out.println("<i class='bi bi-box-arrow-left'></i> Cerrar sesión");
-            out.println("</a>");
-            out.println("</div>");
-
-            // 10. Scripts JavaScript con todas las mejoras
             out.println("<script>");
+            out.println("window.sessionStorage.setItem('dni', '" + dni + "');");
+            out.println("window.sessionStorage.setItem('key', '" + key + "');");
+            
             out.println("function cargarAlumnos(asignatura, boton) {");
             out.println("  const contenedor = document.getElementById('alumnos-' + asignatura);");
             out.println("  ");
-            out.println("  // Comportamiento de toggle (mostrar/ocultar)");
             out.println("  if(contenedor.style.display === 'block') {");
             out.println("    contenedor.style.display = 'none';");
             out.println("    boton.innerHTML = '<i class=\"bi bi-people-fill\"></i> Ver Alumnos';");
@@ -121,21 +122,17 @@ public class AsignaturasProfesorServlet extends HttpServlet {
             out.println("    return;");
             out.println("  }");
             out.println("  ");
-            out.println("  // Mostrar contenido");
             out.println("  const spinnerHtml = '<div class=\"d-flex justify-content-center mt-3\"><div class=\"spinner-border text-primary\" role=\"status\"><span class=\"visually-hidden\">Cargando...</span></div></div>';");
             out.println("  contenedor.innerHTML = spinnerHtml;");
             out.println("  contenedor.style.display = 'block';");
             out.println("  ");
-            out.println("  // Cambiar apariencia del botón");
             out.println("  boton.innerHTML = '<i class=\"bi bi-people-fill\"></i> Ocultar Alumnos';");
             out.println("  boton.classList.remove('btn-success');");
             out.println("  boton.classList.add('btn-danger');");
             out.println("  ");
-            out.println("  // Deshabilitar botón durante la carga");
             out.println("  boton.disabled = true;");
             out.println("  ");
-            out.println("  // Obtener datos de alumnos");
-            out.println("  fetch('" + req.getContextPath() + "/profesores/alumnos-por-asignatura?asignatura=' + encodeURIComponent(asignatura))");
+            out.println("  fetch('alumnos-por-asignatura?asignatura=' + encodeURIComponent(asignatura))");
             out.println("    .then(response => {");
             out.println("      if (!response.ok) {");
             out.println("        return response.text().then(text => { ");
@@ -164,14 +161,17 @@ public class AsignaturasProfesorServlet extends HttpServlet {
             out.println("                  '<td>' + (alumno.additions1Drop1 || 'N/A') + '</td>' +");
             out.println("                  '<td>' + (alumno.additions1Drop2 || 'N/A') + '</td>' +");
             out.println("                  '<td><span class=\"badge ' + getColorNota(nota) + '\">' + notaDisplay + '</span></td>' +");
-            out.println("                  '<td><button class=\"btn btn-sm btn-outline-primary\" onclick=\"editarNota(\\'' + asignatura + '\\',\\'' + (alumno.additions1Drop2 || '') + '\\',this)\"><i class=\"bi bi-pencil\"></i> Editar</button></td>' +");
+            out.println("                  '<td><button class=\"btn btn-sm btn-outline-primary\" onclick=\"editarNota(\\'' + asignatura + '\\',\\'' + (alumno.additions1Drop2 || '') + '\\', this)\"><i class=\"bi bi-pencil\"></i> Editar</button></td>' +");
             out.println("                  '</tr>';");
             out.println("        });");
             out.println("        ");
             out.println("        html += '</tbody></table>' +");
-            out.println("                '<button class=\"btn btn-primary mt-2\" onclick=\"calcularMedia(\\'' + asignatura + '\\')\">' +");
-            out.println("                '<i class=\"bi bi-calculator\"></i> Calcular nota media</button>' +");
-            out.println("                '</div>';");
+            out.println("               '<div class=\"media-container\">' +");
+            out.println("               '<button class=\"btn btn-primary\" onclick=\"calcularMedia(\\'' + asignatura + '\\')\">' +");
+            out.println("               '<i class=\"bi bi-calculator\"></i> Calcular nota media</button>' +");
+            out.println("               '<span id=\"media-' + asignatura + '\" class=\"media-result\"></span>' +");
+            out.println("               '</div>' +");
+            out.println("               '</div>';");
             out.println("      }");
             out.println("      ");
             out.println("      contenedor.innerHTML = html;");
@@ -183,27 +183,111 @@ public class AsignaturasProfesorServlet extends HttpServlet {
             out.println("      boton.disabled = false;");
             out.println("    });");
             out.println("}");
-            out.println("");
+
             out.println("function getColorNota(nota) {");
-            out.println("  if (!nota || nota === 'Sin calificar') return 'bg-secondary';");
+            out.println("  if (!nota || nota === 'Sin calificar') return 'badge-secondary';");
             out.println("  const notaNum = parseFloat(nota);");
-            out.println("  if (isNaN(notaNum)) return 'bg-secondary';");
-            out.println("  if (notaNum >= 9) return 'bg-success';");
-            out.println("  if (notaNum >= 7) return 'bg-info';");
-            out.println("  if (notaNum >= 5) return 'bg-primary';");
-            out.println("  return 'bg-danger';");
+            out.println("  if (isNaN(notaNum)) return 'badge-secondary';");
+            out.println("  if (notaNum >= 9) return 'badge-success';");
+            out.println("  if (notaNum >= 7) return 'badge-info';");
+            out.println("  if (notaNum >= 5) return 'badge-primary';");
+            out.println("  return 'badge-danger';");
             out.println("}");
-            out.println("");
+
             out.println("function editarNota(asignatura, dniAlumno, boton) {");
-            out.println("  console.log('Editar nota para:', asignatura, dniAlumno);");
-            out.println("  // Implementar lógica de edición aquí");
-            out.println("  alert('Editar nota para ' + dniAlumno + ' en ' + asignatura);");
+            out.println("  const fila = boton.closest('tr');");
+            out.println("  const celdaNota = fila.querySelector('td:nth-child(3)');");
+            out.println("  const notaActual = celdaNota.querySelector('.badge').textContent.trim();");
+            out.println("  ");
+            out.println("  const nuevaNota = prompt('Introduzca la nueva nota para ' + dniAlumno + ':', notaActual === 'Sin nota' ? '' : notaActual);");
+            out.println("  if (nuevaNota === null || nuevaNota.trim() === '') return;");
+            out.println("  ");
+            out.println("  const originalHtml = boton.innerHTML;");
+            out.println("  boton.innerHTML = '<span class=\"spinner-border spinner-border-sm\" role=\"status\" aria-hidden=\"true\"></span> Actualizando...';");
+            out.println("  boton.disabled = true;");
+            out.println("  ");
+            out.println("  fetch('alumnos-por-asignatura', {");
+            out.println("    method: 'POST',");
+            out.println("    headers: {");
+            out.println("      'Content-Type': 'application/json',");
+            out.println("      'Authorization': 'Bearer ' + window.sessionStorage.getItem('key')");
+            out.println("    },");
+            out.println("    body: JSON.stringify({");
+            out.println("      action: 'update-grade',");
+            out.println("      asignatura: asignatura,");
+            out.println("      dniAlumno: dniAlumno,");
+            out.println("      nota: nuevaNota.trim(),");
+            out.println("      dniProfesor: window.sessionStorage.getItem('dni')");
+            out.println("    })");
+            out.println("  })");
+            out.println("  .then(response => {");
+            out.println("    if (!response.ok) throw new Error('Error en la respuesta del servidor');");
+            out.println("    return response.json();");
+            out.println("  })");
+            out.println("  .then(data => {");
+            out.println("    if (data.success) {");
+            out.println("      const badge = celdaNota.querySelector('.badge');");
+            out.println("      const notaMostrar = nuevaNota.trim() === '' ? 'Sin nota' : nuevaNota.trim();");
+            out.println("      badge.textContent = notaMostrar;");
+            out.println("      badge.className = 'badge ' + getColorNota(nuevaNota);");
+            out.println("      ");
+            out.println("      const feedback = document.createElement('span');");
+            out.println("      feedback.className = 'text-success ms-2';");
+            out.println("      feedback.innerHTML = '<i class=\"bi bi-check-circle-fill\"></i>';");
+            out.println("      boton.parentNode.appendChild(feedback);");
+            out.println("      setTimeout(() => feedback.remove(), 2000);");
+            out.println("    } else {");
+            out.println("      throw new Error(data.message || 'No se pudo actualizar la nota');");
+            out.println("    }");
+            out.println("  })");
+            out.println("  .catch(error => {");
+            out.println("    console.error('Error al actualizar nota:', error);");
+            out.println("    alert('Error al actualizar la nota: ' + error.message);");
+            out.println("  })");
+            out.println("  .finally(() => {");
+            out.println("    boton.innerHTML = originalHtml;");
+            out.println("    boton.disabled = false;");
+            out.println("  });");
             out.println("}");
-            out.println("");
+
             out.println("function calcularMedia(asignatura) {");
-            out.println("  console.log('Calcular media para:', asignatura);");
-            out.println("  // Implementar lógica de cálculo de media aquí");
-            out.println("  alert('Calcular media para ' + asignatura);");
+            out.println("  const contenedor = document.getElementById('alumnos-' + asignatura);");
+            out.println("  const tabla = contenedor.querySelector('table');");
+            out.println("  const resultadoMedia = document.getElementById('media-' + asignatura);");
+            out.println("  const boton = contenedor.querySelector('.btn-primary');");
+            out.println("  const originalHtml = boton.innerHTML;");
+            out.println("  ");
+            out.println("  boton.innerHTML = '<span class=\"spinner-border spinner-border-sm\" role=\"status\" aria-hidden=\"true\"></span> Calculando...';");
+            out.println("  boton.disabled = true;");
+            out.println("  resultadoMedia.innerHTML = '';");
+            out.println("  ");
+            out.println("  setTimeout(() => {");
+            out.println("    try {");
+            out.println("      const filas = tabla.querySelectorAll('tbody tr');");
+            out.println("      let suma = 0;");
+            out.println("      let contador = 0;");
+            out.println("      ");
+            out.println("      filas.forEach(fila => {");
+            out.println("        const notaText = fila.querySelector('td:nth-child(3)').textContent.trim();");
+            out.println("        if (notaText && notaText !== 'Sin calificar' && notaText !== 'Sin nota') {");
+            out.println("          const nota = parseFloat(notaText);");
+            out.println("          if (!isNaN(nota)) {");
+            out.println("            suma += nota;");
+            out.println("            contador++;");
+            out.println("          }");
+            out.println("        }");
+            out.println("      });");
+            out.println("      ");
+            out.println("      const media = contador > 0 ? (suma / contador).toFixed(2) : '0.00';");
+            out.println("      resultadoMedia.innerHTML = '<strong>Media: ' + media + '</strong>';");
+            out.println("    } catch (error) {");
+            out.println("      console.error('Error al calcular media:', error);");
+            out.println("      resultadoMedia.innerHTML = '<span class=\"text-danger\">Error en cálculo</span>';");
+            out.println("    } finally {");
+            out.println("      boton.innerHTML = originalHtml;");
+            out.println("      boton.disabled = false;");
+            out.println("    }");
+            out.println("  }, 500);");
             out.println("}");
             out.println("</script>");
 
