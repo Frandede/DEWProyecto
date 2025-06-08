@@ -1,35 +1,181 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Iniciar Sesión</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - NOL 2425</title>
+    
+    <!-- Google Fonts: Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
     <style>
-        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f4f4f4; margin: 0; }
-        .login-container { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        .login-container h2 { text-align: center; margin-bottom: 20px; }
-        .login-container label { display: block; margin-bottom: 5px; }
-        .login-container input[type="text"],
-        .login-container input[type="password"] { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
-        .login-container input[type="submit"] { width: 100%; padding: 10px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        .login-container input[type="submit"]:hover { background-color: #0056b3; }
+        /* --- Nueva Paleta de Colores Inspirada en #BE95C4 --- */
+        :root {
+            --bg-start: #4A3F63; /* Púrpura oscuro */
+            --bg-end: #634f80;   /* Tono púrpura medio */
+            
+            --primary-color: #ffffff;
+            --secondary-color: rgba(255, 255, 255, 0.75);
+            
+            --card-bg: rgba(255, 255, 255, 0.1);
+            --card-border: rgba(255, 255, 255, 0.2);
+            --input-bg: rgba(255, 255, 255, 0.12);
+            --shadow-color: rgba(0, 0, 0, 0.15);
+            
+            /* Nuevos colores para el botón */
+            --button-bg: #ffffff;
+            --button-text: #4A3F63; /* El color de fondo oscuro para el texto */
+            --button-bg-hover: #f0f0f0;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Poppins', sans-serif;
+            overflow: hidden;
+        }
+
+        /* --- Fondo Estático con Degradado Sutil --- */
+        .main-container {
+            width: 100%;
+            min-height: 100vh;
+            color: var(--primary-color);
+            background: linear-gradient(160deg, var(--bg-start), var(--bg-end));
+            
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 2rem;
+            box-sizing: border-box;
+        }
+
+        /* --- Contenedor del Login (Glassmorphism) --- */
+        .login-box {
+            background: var(--card-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: 20px;
+            border: 1px solid var(--card-border);
+            padding: 2.5rem 3rem;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 8px 32px 0 var(--shadow-color);
+        }
+
+        h2 {
+            font-size: 2.2rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            color: var(--primary-color);
+        }
+        
+        /* --- Estilos del Formulario --- */
+        form {
+            width: 100%;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group .icon {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--secondary-color);
+            font-size: 1.1rem;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 15px 20px 15px 55px; /* Padding izquierdo aumentado para el icono */
+            background-color: var(--input-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            color: var(--primary-color);
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: border-color 0.3s ease, background-color 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.5);
+            background-color: rgba(255, 255, 255, 0.18);
+        }
+        
+        ::placeholder {
+            color: var(--secondary-color);
+            opacity: 0.9;
+        }
+
+        /* --- Nuevo Estilo de Botón --- */
+        input[type="submit"] {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 1rem;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        input[type="submit"]:hover {
+            background-color: var(--button-bg-hover);
+            transform: translateY(-3px);
+        }
+        
+        @media (max-width: 480px) {
+            .login-box {
+                padding: 2rem 1.5rem;
+            }
+            h2 {
+                font-size: 1.8rem;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <h2>Iniciar Sesión</h2>
-        <form method="POST" action="${pageContext.request.contextPath}/j_security_check">
-            <div>
-                <label for="username">Usuariaa:</label>
-                <input type="text" id="username" name="j_username" required>
-            </div>
-            <div>
-                <label for="password">Contraseña:</label>
-                <input type="password" id="password" name="j_password" required>
-            </div>
-            <div>
-                <input type="submit" value="Entrar">
-            </div>
-        </form>
+
+    <div class="main-container">
+        <div class="login-box">
+            <h2>Iniciar Sesión</h2>
+            
+            <form method="POST" action="${pageContext.request.contextPath}/j_security_check">
+                
+                <div class="input-group">
+                    <i class="icon fa-solid fa-user"></i>
+                    <input type="text" id="username" name="j_username" placeholder="Usuario" required>
+                </div>
+                
+                <div class="input-group">
+                    <i class="icon fa-solid fa-lock"></i>
+                    <input type="password" id="password" name="j_password" placeholder="Contraseña" required>
+                </div>
+                
+                <div>
+                    <input type="submit" value="Entrar">
+                </div>
+            </form>
+        </div>
     </div>
+
 </body>
 </html>

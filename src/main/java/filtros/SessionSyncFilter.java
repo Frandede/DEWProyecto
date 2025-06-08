@@ -29,12 +29,17 @@ public class SessionSyncFilter implements Filter {
         usersData.put("laura",   new String[]{"93847525G", "123456"});
         usersData.put("minerva", new String[]{"37264096W", "123456"});
         usersData.put("lucia", new String[]{"45678912Z", "123456"});
+        usersData.put("alberto", new String[]{"56789123T", "123456"});
+        usersData.put("sofia", new String[]{"67891234K", "123456"});
         
         // Ejemplo profesor:
         usersData.put("ramon",   new String[]{"23456733H", "123456"});
         usersData.put("pedro",   new String[]{"10293756L", "123456"});
         usersData.put("manoli",   new String[]{"06374291A", "123456"});
         usersData.put("joan",   new String[]{"65748923M", "123456"});
+        usersData.put("ana",   new String[]{"78901234X", "123456"});
+        usersData.put("luis",   new String[]{"89012345Y", "123456"});
+        
         
         
     }

@@ -59,11 +59,17 @@
   <user username="miguel" password="123456" roles="rolalu"/>
   <user username="laura" password="123456" roles="rolalu"/>
   <user username="minerva" password="123456" roles="rolalu"/>
+  <user username="lucia" password="123456" roles="rolalu"/>
+  <user username="alberto" password="123456" roles="rolalu"/>
+  <user username="sofia" password="123456" roles="rolalu"/>
+
 
   <!-- usuario “profesor” -->
   <user username="ramon" password="123456" roles="rolpro"/>
   <user username="pedro" password="123456" roles="rolpro"/>
   <user username="manoli" password="123456" roles="rolpro"/>
   <user username="joan" password="123456" roles="rolpro"/>
+  <user username="ana" password="123456" roles="rolpro"/>
+  <user username="luis" password="123456" roles="rolpro"/>
 </tomcat-users>
 
