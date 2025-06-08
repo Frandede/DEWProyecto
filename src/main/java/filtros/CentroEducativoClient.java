@@ -24,6 +24,7 @@ public class CentroEducativoClient {
      * Permite configurar la cabecera "Cookie" (JSESSIONID) que emitió el backend al hacer login,
      * para que las siguientes llamadas reutilicen esa misma sesión.
      */
+    
     public static void setSessionCookie(String rawCookieHeader) {
         sessionCookie = rawCookieHeader;
     }
