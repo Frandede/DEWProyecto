@@ -45,7 +45,7 @@ alumnos_existentes=(
   "23456387R"   # Maria Fernández Gómez
   "34567891F"   # Miguel Hernández Llopis
   "93847525G"   # Laura Benitez Torres
-  "37264096W"   # Minerva Alonso Pérez
+  
 )
 
 ########################################
@@ -93,6 +93,7 @@ nuevos_alumnos=(
   "45678912Z,Lucia,Lopez Morales"
   "56789123T,Alberto,Gomez Ruiz"
   "67891234K,Sofia,Martinez Perez"
+  "37264096W,Minerva Alonso Pérez"
 )
 
 add_alumno() {
