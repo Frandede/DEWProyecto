@@ -86,7 +86,34 @@ public class CentroEducativoClient {
             return null;
         }
     }
-
+    
+    public static String getAlumnoPorDNI(String dni, String key) {
+        HttpURLConnection con = null;
+        try {
+            String urlStr = String.format("%s/alumnos/%s/?key=%s",
+                BASE_URL,
+                URLEncoder.encode(dni, StandardCharsets.UTF_8.name()),
+                URLEncoder.encode(key, StandardCharsets.UTF_8.name()));
+            System.out.println("URL getAsignaturasDeAlumno: " + urlStr);
+            
+            // parsearemos la respuesta JSON como Map<String,String>
+            Type tipoMap = new TypeToken<Map<String, String>>(){}.getType();
+            Map<String, String> datos = makeGetRequest(con, urlStr, tipoMap);
+            if (datos == null) {
+                System.err.println("No se obtuvo datos para el alumno " + dni);
+                return null;
+            }
+            String nombre    = datos.getOrDefault("nombre", "");
+            String apellidos = datos.getOrDefault("apellidos", "");
+            return (nombre + " " + apellidos).trim();
+            //return makeGetRequest(con, urlStr, new TypeToken<String>(){}.getType());
+        } catch (Exception e) {
+            System.err.println("Error obteniendo nombre de alumno: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
     public static List<AsignaturaProfesor> getAsignaturasDeProfesor(String dni, String key) {
         HttpURLConnection con = null;
         try {

@@ -37,6 +37,9 @@ public class AsignaturasAlumnoServlet extends HttpServlet {
             out.println("<nav class='navbar navbar-light bg-light mb-4'>"
                     + "<div class='container-fluid'>"
                     + "<span class='navbar-text'>Usuario: " + dni + "</span>"
+                    + "<a class='btn btn-outline-primary' "
+                    + "href='" + req.getContextPath() + "/alumno/ficha?dni=" + dni + "'>"
+                    + "Ver mi ficha</a>"
                     + "<a class='btn btn-outline-danger' href='" 
                     + req.getContextPath() + "/logout'>Cerrar sesión</a>"
                     + "</div></nav>");
