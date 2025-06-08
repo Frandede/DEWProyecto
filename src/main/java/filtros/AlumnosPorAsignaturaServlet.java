@@ -42,7 +42,7 @@ public class AlumnosPorAsignaturaServlet extends HttpServlet {
                 resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 out.print("{\"error\":\"Error al obtener alumnos\"}");
             } else {
-                out.print(new Gson().toJson(alumnos));
+                out.print(gson.toJson(alumnos));
                 System.out.println("Enviados " + alumnos.size() + " alumnos");
             }
         }
@@ -75,10 +75,12 @@ public class AlumnosPorAsignaturaServlet extends HttpServlet {
             );
 
             // Enviar respuesta JSON
-            resp.setContentType("application/json");
+            resp.setContentType("application/json;charset=UTF-8");
             JsonObject response = new JsonObject();
             response.addProperty("success", success);
             resp.getWriter().write(gson.toJson(response));
+        } else {
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Acción no reconocida");
         }
     }
 }
