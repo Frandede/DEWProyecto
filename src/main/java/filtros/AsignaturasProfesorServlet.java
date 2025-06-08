@@ -67,14 +67,12 @@ public class AsignaturasProfesorServlet extends HttpServlet {
             out.println("<body>");
             out.println("  <div class='container'>");
 
-            // Botón de cerrar sesión
             out.println("    <div class='d-flex justify-content-end mb-4'>");
             out.println("      <a href='" + contextPath + "/logout' class='btn btn-outline-danger'>");
             out.println("        <i class='bi bi-box-arrow-left'></i> Cerrar sesión");
             out.println("      </a>");
             out.println("    </div>");
 
-            // Cabecera con datos del profesor
             out.println("    <div class='card header-card mb-4'>");
             out.println("      <div class='card-body'>");
             out.println("        <h1 class='h4 mb-0'><i class='bi bi-book'></i> Asignaturas que imparte</h1>");
@@ -110,13 +108,11 @@ public class AsignaturasProfesorServlet extends HttpServlet {
                 out.println("    </div>");
             }
 
-            // JavaScript
             out.println("    <script>");
             out.println("      const contextPath = '" + contextPath + "';");
             out.println("      window.sessionStorage.setItem('dni', '" + dni + "');");
             out.println("      window.sessionStorage.setItem('key', '" + key + "');");
 
-            // cargarAlumnos()
             out.println("      function cargarAlumnos(asignatura, boton) {");
             out.println("        const contenedor = document.getElementById('alumnos-' + asignatura);");
             out.println("        if (contenedor.style.display === 'block') {");
@@ -162,11 +158,14 @@ public class AsignaturasProfesorServlet extends HttpServlet {
             out.println("            alumnos.forEach(alumno => {");
             out.println("              const nota = alumno.additions1Drop3 || 'Sin calificar';");
             out.println("              const notaDisplay = nota === 'Sin calificar' ? 'Sin nota' : nota;");
+            out.println("              const nombreAlumno = alumno.additions1Drop1 || 'N/A';");
+            out.println("              const dniAlumno = alumno.additions1Drop2 || '';");
             out.println("              html += '<tr>' +");
-            out.println("                      '<td>' + (alumno.additions1Drop1 || 'N/A') + '</td>' +");
-            out.println("                      '<td>' + (alumno.additions1Drop2 || 'N/A') + '</td>' +");
+            // <-- CAMBIO PRINCIPAL: Se ha eliminado target="_blank" para que el enlace se abra en la misma pestaña
+            out.println("                      '<td><a href=\"' + contextPath + '/profesor/ficha-alumno?dni=' + encodeURIComponent(dniAlumno) + '\">' + nombreAlumno + '</a></td>' +");
+            out.println("                      '<td>' + dniAlumno + '</td>' +");
             out.println("                      '<td><span class=\"badge ' + getColorNota(nota) + '\">' + notaDisplay + '</span></td>' +");
-            out.println("                      '<td><button class=\"btn btn-sm btn-outline-primary\" onclick=\"editarNota(\\'' + asignatura + '\\',\\'' + (alumno.additions1Drop2 || '') + '\\', this)\"><i class=\"bi bi-pencil\"></i> Editar</button></td>' +");
+            out.println("                      '<td><button class=\"btn btn-sm btn-outline-primary\" onclick=\"editarNota(\\'' + asignatura + '\\',\\'' + dniAlumno + '\\', this)\"><i class=\"bi bi-pencil\"></i> Editar</button></td>' +");
             out.println("                      '</tr>';");
             out.println("            });");
             out.println("            html += '</tbody></table>' +");
@@ -190,7 +189,6 @@ public class AsignaturasProfesorServlet extends HttpServlet {
             out.println("        });");
             out.println("      }");
 
-            // getColorNota()
             out.println("      function getColorNota(nota) {");
             out.println("        if (nota === 'Sin calificar') return 'badge-secondary';");
             out.println("        const num = parseFloat(nota);");
@@ -201,7 +199,6 @@ public class AsignaturasProfesorServlet extends HttpServlet {
             out.println("        return 'badge-success';");
             out.println("      }");
 
-            // editarNota()
             out.println("      function editarNota(asignatura, dniAlumno, boton) {");
             out.println("        const fila = boton.closest('tr');");
             out.println("        const celdaNota = fila.querySelector('td:nth-child(3)');");
@@ -211,7 +208,6 @@ public class AsignaturasProfesorServlet extends HttpServlet {
             out.println("        boton.onclick = function() { guardarNota(asignatura, dniAlumno, boton); };");
             out.println("      }");
 
-            // guardarNota()
             out.println("      function guardarNota(asignatura, dniAlumno, boton) {");
             out.println("        const fila = boton.closest('tr');");
             out.println("        const inputNota = fila.querySelector('td:nth-child(3) input');");
@@ -235,7 +231,7 @@ public class AsignaturasProfesorServlet extends HttpServlet {
             out.println("            action: 'update-grade',");
             out.println("            asignatura: asignatura,");
             out.println("            dniAlumno: dniAlumno,");
-            out.println("            nota: numNota,");  // <-- aquí va numNota, no numNota.toFloat()
+            out.println("            nota: numNota,");
             out.println("            dniProfesor: dniProfesor");
             out.println("          })");
             out.println("        })");
@@ -264,7 +260,6 @@ public class AsignaturasProfesorServlet extends HttpServlet {
             out.println("        });");
             out.println("      }");
 
-            // calcularMedia()
             out.println("      function calcularMedia(asignatura) {");
             out.println("        fetch(contextPath + '/profesores/alumnos-por-asignatura?asignatura=' + encodeURIComponent(asignatura), {");
             out.println("          credentials: 'same-origin'");
