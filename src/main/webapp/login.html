@@ -17,12 +17,6 @@
 <body>
     <div class="login-container">
         <h2>Iniciar Sesión</h2>
-        <!-- IMPORTANTE:
-             action="j_security_check"
-             method="POST"
-             username input name="j_username"
-             password input name="j_password"
-        -->
         <form method="POST" action="${pageContext.request.contextPath}/j_security_check">
             <div>
                 <label for="username">Usuario:</label>
